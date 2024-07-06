@@ -7,3 +7,4 @@ prop = GProp_GProps()
 tolerance = 1e-5 # Adjust to your liking
 volume = brepgprop_VolumeProperties(my_shape, prop, tolerance)
 print(volume)
+print('this was volume')
