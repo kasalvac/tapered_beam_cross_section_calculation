@@ -44,10 +44,10 @@ def create_mesh(shape):
 
 def draw_line_origin(direction):
     # Create an Origin
-    start_pnt = gp_Pnt(0,0,0)
+    start_pnt = gp_Pnt(x_plane,0,0)
 
     # Specify the direction of the line
-    line_dir = gp_Dir(direction[0], 0, direction[1])
+    line_dir = gp_Dir(0, direction[0], direction[1])
 
     #Making the line
     line_origin = Geom_Line(start_pnt, line_dir).Lin()
@@ -59,13 +59,13 @@ def draw_line_origin(direction):
 
 
 # Definition the plane
-x_plane = 10
-point_on_plane = gp_Pnt(0, 0, 0)  # Point on the plane
-normal_to_plane = gp_Dir(0, 1, 0)  # Normal vector to the plane
+x_plane = 1000
+point_on_plane = gp_Pnt(x_plane, 0, 0)  # Point on the plane
+normal_to_plane = gp_Dir(1, 0, 0)  # Normal vector to the plane
 plane = gp_Pln(point_on_plane, normal_to_plane)
 
  # Load the STEP model
-step_model_path = "Fluegelhuelle_Test3.stp"
+step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
 step_model = load_step_model(step_model_path)
 
 # Slicing of the model and extracting the wire model
@@ -80,7 +80,7 @@ line_origin = draw_line_origin(direction)
 
 display.DisplayShape(line_origin)
 
-# display.DisplayShape(step_model, color="blue")
+display.DisplayShape(step_model, color="blue")
 display.DisplayShape(sliced_model, color="red")
 
 display.View_Iso()
