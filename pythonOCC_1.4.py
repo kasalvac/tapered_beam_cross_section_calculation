@@ -1,4 +1,4 @@
-# finding the intersections
+# working intersections hllalaujah!
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -79,7 +79,7 @@ mesh = create_mesh(sliced_model)# Create a mesh from the sliced model
 
 
 # Making the points and lines that will intersect the shape
-direction = (1, 1)  # Direction vector
+direction = (1, 0)  # Direction vector
 line_origin = draw_line_origin(direction)
 
 # Finding the intersections
@@ -97,11 +97,23 @@ intersection_points = []
 for i in range(1, num_intersections + 1):
     extrema_point = extrema_calculator.PointOnShape1(i)
     intersection_points.append(extrema_point)
+    print(extrema_point)
 
-# 'intersection_points' will contain all the intersection points
-print('intersection_points')
-print(intersection_points)
+    # Extract coordinates
+    x = extrema_point.X()
+    y = extrema_point.Y()
+    z = extrema_point.Z()
 
+    # Print coordinates
+    print(f"X coordinate: {x}")
+    print(f"Y coordinate: {y}")
+    print(f"Z coordinate: {z}")
+
+    # Use dir() to list all attributes and methods
+    # attributes_and_methods = dir(extrema_point)
+
+    # Print the list
+    # print(attributes_and_methods)
 
 
 # Vizualization
