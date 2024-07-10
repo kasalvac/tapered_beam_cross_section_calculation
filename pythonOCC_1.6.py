@@ -9,9 +9,16 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 
+# from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Section
+# from OCC.Core.TopExp import TopExp_Explorer
+# from OCC.Core.TopAbs import TopAbs_EDGE
+# from OCC.Core.TopoDS import topods_Edge
+# from OCC.Core.BRep import BRep_Tool
+
+
 
 # Starting the vizualization
-display, start_display, add_menu, add_function_to_menu = init_display()
+# display, start_display, add_menu, add_function_to_menu = init_display()
 
 def load_step_model(file_path):
     reader = STEPControl_Reader()
@@ -38,13 +45,14 @@ def draw_line_origin(direction):
     line_origin = line_origin.Shape()
     return line_origin
 
+
 def find_intersections(sliced_model, line_origin):
     # Finding the intersections
     extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
     extrema_calculator.Perform() # Perform the calculation to find intersections
     num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
-    if num_intersections != 4:
-        return "Error: num_intersections != 4"
+    # if num_intersections != 4:
+    #     return "Error: num_intersections != 4"
 
     # Iterate through intersections and get the points
     intersection_points = []
@@ -54,8 +62,28 @@ def find_intersections(sliced_model, line_origin):
         intersection_points.append(intersection_point)
     return intersection_points
 
+# different approach but just as bad results
 
+# def find_intersections(sliced_model, line_origin):
+#     # Compute intersections between the sliced model and the line
+#     section_algo = BRepAlgoAPI_Section(sliced_model, line_origin)
+#     section_algo.Build()
 
+#     # Get the generated shape containing the intersections
+#     intersection_shape = section_algo.Shape()
+
+#     # Extract intersection points from the shape
+#     intersection_points = []
+#     shape_explorer = TopExp_Explorer(intersection_shape, TopAbs_EDGE)
+#     while shape_explorer.More():
+#         edge = topods_Edge(shape_explorer.Current())
+#         p1 = BRep_Tool().Pnt(BRep_Tool().FirstVertex(edge))
+#         p2 = BRep_Tool().Pnt(BRep_Tool().LastVertex(edge))
+#         intersection_points.append(p1)
+#         intersection_points.append(p2)
+#         shape_explorer.Next()
+
+#     return intersection_points
 
 # Definition the plane
 x_plane = 10
@@ -64,14 +92,14 @@ normal_to_plane = gp_Dir(1, 0, 0)  # Normal vector to the plane
 plane = gp_Pln(point_on_plane, normal_to_plane)
 
 # Load the STEP model
-step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
+step_model_path = "round_bar.stp"
 step_model = load_step_model(step_model_path)
 
 # Slicing of the model - extracting the wire model
 sliced_model = slice_model_with_plane(step_model, plane)# Slice the model with the plane
 
 # Making the points and lines that will intersect the shape
-direction = (1, 0)  # Direction vector
+direction = (0, 1)  # Direction vector
 line_origin = draw_line_origin(direction)
 
 intersection_points = find_intersections(sliced_model, line_origin)
@@ -88,24 +116,9 @@ for i in range (0, len(intersection_points)):
     print(f"Z coordinate: {z}")
     print("\n")
 
+print(len(intersection_points))
+
 # print(intersection_points)
-
-
-# # Extract coordinates
-# x = intersection_point.X()
-# y = intersection_point.Y()
-# z = intersection_point.Z()
-
-# # Print coordinates
-# print(f"X coordinate: {x}")
-# print(f"Y coordinate: {y}")
-# print(f"Z coordinate: {z}")
-
-# Use dir() to list all attributes and methods
-# attributes_and_methods = dir(extrema_point)
-
-# Print the list
-# print(attributes_and_methods)
 
 # Vizualization
 # display.DisplayShape(line_origin)
