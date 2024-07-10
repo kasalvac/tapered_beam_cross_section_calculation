@@ -1,4 +1,4 @@
-# working intersections hllalaujah!
+# working def find_intersections(sliced_model, line_origin):
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -38,6 +38,24 @@ def draw_line_origin(direction):
     line_origin = line_origin.Shape()
     return line_origin
 
+def find_intersections(sliced_model, line_origin):
+    # Finding the intersections
+    extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
+    extrema_calculator.Perform() # Perform the calculation to find intersections
+    num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
+    if num_intersections != 4:
+        return "Error: num_intersections != 4"
+
+    # Iterate through intersections and get the points
+    intersection_points = []
+    for i in range(1, num_intersections + 1):
+        extrema_point = extrema_calculator.PointOnShape1(i)
+        intersection_point = gp_Pnt(extrema_point.X(), extrema_point.Y(), extrema_point.Z())
+        intersection_points.append(intersection_point)
+    return intersection_points
+
+
+
 
 # Definition the plane
 x_plane = 10
@@ -53,37 +71,41 @@ step_model = load_step_model(step_model_path)
 sliced_model = slice_model_with_plane(step_model, plane)# Slice the model with the plane
 
 # Making the points and lines that will intersect the shape
-direction = (1, 1)  # Direction vector
+direction = (1, 0)  # Direction vector
 line_origin = draw_line_origin(direction)
 
-# Finding the intersections
-extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
-extrema_calculator.Perform() # Perform the calculation to find intersections
-num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
+intersection_points = find_intersections(sliced_model, line_origin)
 
-# Iterate through intersections and get the points
-intersection_points = []
-for i in range(1, num_intersections + 1):
-    extrema_point = extrema_calculator.PointOnShape1(i)
-    intersection_points.append(extrema_point)
-    print(extrema_point)
-
+for i in range (0, len(intersection_points)):
     # Extract coordinates
-    x = extrema_point.X()
-    y = extrema_point.Y()
-    z = extrema_point.Z()
+    x = intersection_points[i].X()
+    y = intersection_points[i].Y()
+    z = intersection_points[i].Z()
 
     # Print coordinates
     print(f"X coordinate: {x}")
     print(f"Y coordinate: {y}")
     print(f"Z coordinate: {z}")
+    print("\n")
 
-    # Use dir() to list all attributes and methods
-    # attributes_and_methods = dir(extrema_point)
+# print(intersection_points)
 
-    # Print the list
-    # print(attributes_and_methods)
 
+# # Extract coordinates
+# x = intersection_point.X()
+# y = intersection_point.Y()
+# z = intersection_point.Z()
+
+# # Print coordinates
+# print(f"X coordinate: {x}")
+# print(f"Y coordinate: {y}")
+# print(f"Z coordinate: {z}")
+
+# Use dir() to list all attributes and methods
+# attributes_and_methods = dir(extrema_point)
+
+# Print the list
+# print(attributes_and_methods)
 
 # Vizualization
 # display.DisplayShape(line_origin)
