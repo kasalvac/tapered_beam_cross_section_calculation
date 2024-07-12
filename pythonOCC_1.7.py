@@ -43,8 +43,8 @@ def find_intersections_in(sliced_model, line_origin): # Find the points on the i
     extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
     extrema_calculator.Perform() # Perform the calculation to find intersections
     num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
-    if num_intersections != 4:
-        return "Error: num_intersections != 4"
+    # if num_intersections != 4:
+    #     return "Error: num_intersections != 4"
 
     # Iterate through intersections and get the points
     points_on_plane = []
@@ -61,8 +61,8 @@ def find_intersections_out(sliced_model, line_origin): # Find the points on the 
     extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
     extrema_calculator.Perform() # Perform the calculation to find intersections
     num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
-    if num_intersections != 4:
-        return "Error: num_intersections != 4"
+    # if num_intersections != 4:
+    #     return "Error: num_intersections != 4"
 
     # Iterate through intersections and get the points
     points_on_plane = []
@@ -77,13 +77,13 @@ def find_intersections_out(sliced_model, line_origin): # Find the points on the 
 
 
 # Definition the plane
-x_plane = 10
+x_plane = 100
 point_on_plane = gp_Pnt(x_plane, 0, 0)  # Point on the plane
 normal_to_plane = gp_Dir(1, 0, 0)  # Normal vector to the plane
 plane = gp_Pln(point_on_plane, normal_to_plane)
 
 # Load the STEP model
-step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
+step_model_path = "round_bar.stp"
 step_model = load_step_model(step_model_path)
 
 # Slicing of the model - extracting the wire model
