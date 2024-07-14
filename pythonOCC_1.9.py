@@ -1,4 +1,4 @@
-# calculating area succesfully
+# calculating second moemnt of enertia half succesfully
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -8,6 +8,7 @@ from OCC.Core.gp import gp_Pnt, gp_Dir, gp_Pln
 from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
+from OCC.Core.GeomAPI import GeomAPI_ProjectPointOnCurve
 
 
 # Preparing the vizualization
@@ -83,7 +84,7 @@ def find_intersections_out(sliced_model, line_origin): # Find the points on the 
 
 
 # Definition the plane
-x_plane = 1000
+x_plane = 800
 point_on_plane = gp_Pnt(x_plane, 0, 0)  # Point on the plane
 normal_to_plane = gp_Dir(1, 0, 0)  # Normal vector to the plane
 plane = gp_Pln(point_on_plane, normal_to_plane)
@@ -108,27 +109,41 @@ for i in range(0, desired_num_points):
     intersection_points_out = find_intersections_out(sliced_model, line_origin)
 
 area = 0
-for i in range (0, len(intersection_points_in) - 1): # Calculating areas of triangles using vertexes - formula half of sum of things #googleit 
+second_moment_area = 0
+for i in range (0, len(intersection_points_in) - 1): # Calculating areas of triangles using vertexes - formula half of sum of things #google it
+    # using two triangles at a time 
     tri_area_1 = (1/2)*abs(((intersection_points_in[i].Y()*(intersection_points_in[i+1].Z() - (intersection_points_out[i].Z()))) + (intersection_points_in[i+1].Y()*((intersection_points_out[i].Z()) - intersection_points_in[i].Z())) + (intersection_points_out[i].Y()*(intersection_points_in[i].Z() - intersection_points_in[i+1].Z()))))
     area += tri_area_1
+
     tri_area_2 = (1/2)*abs(((intersection_points_in[i+1].Y()*(intersection_points_out[i+1].Z() - (intersection_points_out[i].Z()))) + (intersection_points_out[i+1].Y()*((intersection_points_out[i].Z()) - intersection_points_in[i+1].Z())) + (intersection_points_out[i].Y()*(intersection_points_in[i+1].Z() - intersection_points_out[i+1].Z()))))
     area += tri_area_2
+
+    # calculating the lenghts lenthg of the triangls base - first triangle
+    b = math.sqrt( ((intersection_points_in[i+1].Y() - intersection_points_in[i].Y()) ** 2) + ((intersection_points_in[i+1].Z() - intersection_points_in[i].Z()) ** 2) )
+    
+    # calculating the heitght of triangle
+    numerator = abs((intersection_points_in[i+1].Y() - intersection_points_in[i].Y()) * (intersection_points_in[i].Z() - intersection_points_out[i+1].Z()) - (intersection_points_in[i].Y() - intersection_points_out[i].Y()) * (intersection_points_in[i+1].Z() - intersection_points_in[i].Z()))
+    denominator = math.sqrt((intersection_points_in[i+1].Y() - intersection_points_in[i].Y()) ** 2 + (intersection_points_in[i+1].Z() - intersection_points_in[i].Z()) ** 2)
+    
+    h = numerator / denominator # Calculates the distance between a line defined by two points (in (i) and in (i+1)) and a third point out (i)
+
+    second_moment_area_no_steiner = b * (h ** (3/12))
+
+    # calculating the coordinated of the centorid of triangle
+    centroid_triangle = gp_Pnt(x_plane, (intersection_points_in[i].Y() + intersection_points_in[i+1].Y() + intersection_points_out[i].Y()) / 3, (intersection_points_in[i].Z() + intersection_points_in[i+1].Z() + intersection_points_out[i].Z()) / 3)
+
+    # steiner is second moment of area + area times distance to center ** 2
+    second_moment_area_steiner = second_moment_area_no_steiner + (tri_area_1 * (centroid_triangle.Y() ** 2 + centroid_triangle.Z() ** 2))
+
+    # sum of all triangles second moment of enertia
+    second_moment_area += second_moment_area_steiner
+
 
 print('area:')
 print(area)
 
-# for i in range (0, 10):
-#     print('coordinates:')
-#     print(intersection_points_in[i].Y(), intersection_points_in[i].Z())
-#     print(intersection_points_out[i].Y(), intersection_points_out[i].Z())
-
-
-# for point in intersection_points_in:
-#     display.DisplayShape(point, color="black")
-
-# for point in intersection_points_out:
-#     display.DisplayShape(point, color="green")
-
+print('second_moment_area:')
+print(second_moment_area)
 
 # Vizualization
 # display.DisplayShape(line_origin)
