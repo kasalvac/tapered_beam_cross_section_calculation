@@ -99,7 +99,7 @@ sliced_model = slice_model_with_plane(step_model, plane)# Slice the model with t
 
 intersection_points_in = [] # Declare empty list for inner shell
 intersection_points_out = [] # Declare empty list for outer shell
-desired_num_points = 1000
+desired_num_points = 100
 for i in range(0, desired_num_points):
     angle_pich = (2 * math.pi) / desired_num_points
     cur_angle = i * angle_pich
@@ -144,6 +144,12 @@ print(area)
 
 print('second_moment_area:')
 print(second_moment_area)
+
+# for point in intersection_points_in:
+#     display.DisplayShape(point, color="black")
+
+# for point in intersection_points_out:
+#     display.DisplayShape(point, color="green")
 
 # Vizualization
 # display.DisplayShape(line_origin)
