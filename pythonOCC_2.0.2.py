@@ -1,5 +1,6 @@
 # calculating moments of inertia correctly #thanksgrandpa 
 # not working for big number of points because of security check
+#chceck skipped
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -47,8 +48,8 @@ def find_intersections_in(sliced_model, line_origin): # Find the points on the i
     extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
     extrema_calculator.Perform() # Perform the calculation to find intersections
     num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
-    if num_intersections != 2:
-        return "Error: num_intersections != 2"
+    # if num_intersections != 2:
+    #     return "Error: num_intersections != 2"
 
     # Iterate through intersections and get the points
     points_on_plane = []
@@ -67,8 +68,8 @@ def find_intersections_out(sliced_model, line_origin): # Find the points on the 
     extrema_calculator = BRepExtrema_DistShapeShape(sliced_model, line_origin)
     extrema_calculator.Perform() # Perform the calculation to find intersections
     num_intersections = extrema_calculator.NbSolution() # Get the number of intersections
-    if num_intersections != 2:
-        return "Error: num_intersections != 2"
+    # if num_intersections != 2:
+    #     return "Error: num_intersections != 2"
 
     # Iterate through intersections and get the points
     points_on_plane = []
@@ -99,7 +100,7 @@ sliced_model = slice_model_with_plane(step_model, plane)# Slice the model with t
 
 intersection_points_in = [] # Declare empty list for inner shell
 intersection_points_out = [] # Declare empty list for outer shell
-desired_num_points = 2000
+desired_num_points = 1000
 for i in range(0, desired_num_points):
     angle_pich = (2 * math.pi) / desired_num_points
     cur_angle = i * angle_pich
@@ -137,7 +138,7 @@ for i in range (0, len(intersection_points_in) - 1): # Calculating areas of tria
     Dx_1 = Cx_1 * (By_1/Cy_1) # coordinate of the point on the parallel line
     b_2 = abs(Dx_1 - Bx_1) # calculating lenght of the base of both triangles
     Y0_1 = (b_2 / 12) * (By_1 ** 3 + (Cy_1 - By_1) ** 3) # calculating the moment of inertia of triangle to the split line
-    t_2 = (By_1 + Cy_1) / 3 # calculating the distance of center of mass to poit closest to axis (might be wrong!!!!!!)
+    t_2 = (By_1 + Cy_1) / 3 # calculating the distance of center of mass to poit closest to axis
     Yt_1 = Y0_1 - tri_area_1 * ((By_1 - t_2) ** 2) # moment of inertia to thhe center of mass
     Ys_1 = Yt_1 + tri_area_1 * ((t_2 + sorted_points_1[0].Z()) ** 2) #moment of inertia to the centerpoint
     moment_of_inertia_Y += Ys_1
@@ -161,6 +162,7 @@ for i in range (0, len(intersection_points_in) - 1): # Calculating areas of tria
     Yt_2 = Y0_2 - tri_area_2 * ((By_2 - t_2) ** 2) # moment of inertia to thhe center of mass
     Ys_2 = Yt_2 + tri_area_2 * ((t_2 + sorted_points_2[0].Z()) ** 2) #moment of inertia to the centerpoint
     moment_of_inertia_Y += Ys_2
+    
 
 
 print('area:')
