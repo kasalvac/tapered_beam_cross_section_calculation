@@ -1,6 +1,7 @@
 # calculating moments of inertia correctly #thanksgrandpa 
 # not working for big number of points because of security check
-#chceck skipped
+# chceck skipped
+# adding center of mass calculation
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -85,7 +86,7 @@ def find_intersections_out(sliced_model, line_origin): # Find the points on the 
 
 
 # Definition the plane
-x_plane = 1000
+x_plane = 10
 point_on_plane = gp_Pnt(x_plane, 0, 0)  # Point on the plane als othe center of the cross section
 normal_to_plane = gp_Dir(1, 0, 0)  # Normal vector to the plane
 plane = gp_Pln(point_on_plane, normal_to_plane)
@@ -110,6 +111,8 @@ for i in range(0, desired_num_points):
     intersection_points_out = find_intersections_out(sliced_model, line_origin)
 
 area = 0
+cent_mass_X_prepare = 0
+cent_mass_Y_prepare = 0
 moment_of_inertia_Y = 0
 moment_of_inertia_Z = 0
 for i in range (0, len(intersection_points_in) - 1): # Calculating areas of triangles using vertexes - formula half of sum of things #google it
@@ -122,6 +125,16 @@ for i in range (0, len(intersection_points_in) - 1): # Calculating areas of tria
     # second triangle Area
     tri_area_2 = (1/2)*abs(((intersection_points_in[i+1].Y()*(intersection_points_out[i+1].Z() - (intersection_points_out[i].Z()))) + (intersection_points_out[i+1].Y()*((intersection_points_out[i].Z()) - intersection_points_in[i+1].Z())) + (intersection_points_out[i].Y()*(intersection_points_in[i+1].Z() - intersection_points_out[i+1].Z()))))
     area += tri_area_2
+
+    # calculation of center of mass
+    #starting by finding the centroid of the triangles
+    tri_centr_X_1 = (intersection_points_in[i].Y() + intersection_points_in[i+1].Y() + intersection_points_out[i].Y())/3
+    tri_centr_X_2 = (intersection_points_in[i+1].Y() + intersection_points_out[i+1].Y() + intersection_points_out[i].Y())/3
+    tri_centr_Y_1 = (intersection_points_in[i].Z() + intersection_points_in[i+1].Z() + intersection_points_out[i].Z())/3
+    tri_centr_Y_2 = (intersection_points_in[i+1].Z() + intersection_points_out[i+1].Z() + intersection_points_out[i].Z())/3
+    # precalculating the coordinates (needs to be divided by total area in the end)
+    cent_mass_X_prepare += tri_area_1 * tri_centr_X_1 + tri_area_2 * tri_centr_X_2
+    cent_mass_Y_prepare += tri_area_1 * tri_centr_Y_1 + tri_area_2 * tri_centr_Y_2
 
     # first triangle moments of inertia to the Y axis (converted to be X axis)
     # sorting the points based on Z coordinate (distance to axis)
@@ -158,15 +171,20 @@ for i in range (0, len(intersection_points_in) - 1): # Calculating areas of tria
     Dx_2 = Cx_2 * (By_2/Cy_2) # coordinate of the point on the parallel line
     b_2 = abs(Dx_2 - Bx_2) # calculating lenght of the base of both triangles
     Y0_2 = (b_2 / 12) * (By_2 ** 3 + (Cy_2 - By_2) ** 3) # calculating the moment of inertia of triangle to the split line
-    t_2 = (By_2 + Cy_2) / 3 # calculating the distance of center of mass to poit closest to axis (might be wrong!!!!!!)
+    t_2 = (By_2 + Cy_2) / 3 # calculating the distance of center of mass to poit closest to axis
     Yt_2 = Y0_2 - tri_area_2 * ((By_2 - t_2) ** 2) # moment of inertia to thhe center of mass
     Ys_2 = Yt_2 + tri_area_2 * ((t_2 + sorted_points_2[0].Z()) ** 2) #moment of inertia to the centerpoint
     moment_of_inertia_Y += Ys_2
     
-
+# finalizing the calculation of center of mass
+cent_mass_X = cent_mass_X_prepare / area
+cent_mass_Y = cent_mass_Y_prepare / area
 
 print('area:')
 print(area)
+
+print('center of mass:')
+print(f"X: {cent_mass_X}, Y: {cent_mass_Y}")
 
 print('moment_of_inertia_Y:')
 print(moment_of_inertia_Y)
