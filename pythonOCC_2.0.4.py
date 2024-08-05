@@ -2,7 +2,7 @@
 # not working for big number of points because of security check
 # chceck skipped
 # adding center of mass calculation
-# came back to original dimension system
+# should add moment of inertia calculation Z
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -13,6 +13,7 @@ from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
 from OCC.Core.Geom import Geom_Line
 from OCC.Core.BRepExtrema import BRepExtrema_DistShapeShape
 from OCC.Core.GeomAPI import GeomAPI_ProjectPointOnCurve
+import pandas as pd
 
 
 # Preparing the vizualization
@@ -85,6 +86,127 @@ def find_intersections_out(sliced_model, line_origin): # Find the points on the 
         intersection_points_out.append(points_on_plane[1])
     return intersection_points_out
 
+def calculate_triangle_area(p1, p2, p3):
+    """
+    Calculate the area of a triangle given three points.
+    
+    Parameters:
+    p1, p2, p3 (gp_Pnt): Points representing the vertices of the triangle.
+    
+    Returns:
+    float: The area of the triangle.
+    """
+    x1, y1, z1 = p1.X(), p1.Y(), p1.Z()
+    x2, y2, z2 = p2.X(), p2.Y(), p2.Z()
+    x3, y3, z3 = p3.X(), p3.Y(), p3.Z()
+    
+    # Calculate vectors from p1 to p2 and from p1 to p3
+    vector1 = (x2 - x1, y2 - y1, z2 - z1)
+    vector2 = (x3 - x1, y3 - y1, z3 - z1)
+    
+    # Calculate the cross product of the two vectors
+    cross_product = (
+        vector1[1] * vector2[2] - vector1[2] * vector2[1],
+        vector1[2] * vector2[0] - vector1[0] * vector2[2],
+        vector1[0] * vector2[1] - vector1[1] * vector2[0]
+    )
+    
+    # Calculate the magnitude of the cross product vector
+    cross_product_magnitude = (cross_product[0]**2 + cross_product[1]**2 + cross_product[2]**2)**0.5
+    
+    # The area of the triangle is half the magnitude of the cross product of the vectors
+    area = 0.5 * cross_product_magnitude
+    
+    return area
+
+def calculate_moment_of_inertia_Y(p1, p2, p3):
+    """
+    Calculate the moment of inertia of a triangle defined by three points about a specified axis.
+
+    Parameters:
+    p1, p2, p3 (gp_Pnt): Points representing the vertices of the triangle.
+
+    Returns:
+    float: The moment of inertia of the triangle about the specified axis.
+    """
+    # Assuming tri_area is provided or calculated elsewhere
+    tri_area = calculate_triangle_area(p1, p2, p3)
+
+    # List of points
+    points = [p1, p2, p3]
+
+    # Sort points based on the specified axis
+    sorted_points = sorted(points, key=lambda p: p.Z())
+
+    # for i, point in enumerate(sorted_points):
+    #     print(f"Point {i+1}: ({point.X()}, {point.Y()}, {point.Z()})")
+
+    # Referencing the coordinates to the point closest to the axis
+    By = (sorted_points[1].Y() - sorted_points[0].Y())
+    Bz = (sorted_points[1].Z() - sorted_points[0].Z())
+    Cy = (sorted_points[2].Y() - sorted_points[0].Y())
+    Cz = (sorted_points[2].Z() - sorted_points[0].Z())
+
+    # Triangle has to be split into two via a parallel line to axis going through the middle point
+    Dy = Cy * (Bz / Cz) if Cz != 0 else 0  # Coordinate of the point on the parallel line
+    b = abs(Dy - By)  # Calculating length of the base of both triangles
+
+    # Moment of inertia calculations (adjusted for the correct formulas)
+    Y0 = (b / 12) * (Bz ** 3 + (Cz - Bz) ** 3)  # Moment of inertia of triangle to the split line
+    t = (Bz + Cz) / 3  # Distance of the center of mass to point closest to axis
+    Yt = Y0 - tri_area * ((Bz - t) ** 2)  # Moment of inertia to the center of mass
+    Ys = Yt + tri_area * ((t + sorted_points[0].Z()) ** 2)  # Moment of inertia to the center point
+
+    return Ys
+
+def calculate_moment_of_inertia_Z(p1, p2, p3):
+    """
+    Calculate the moment of inertia of a triangle defined by three points about a specified axis.
+
+    Parameters:
+    p1, p2, p3 (gp_Pnt): Points representing the vertices of the triangle.
+
+    Returns:
+    float: The moment of inertia of the triangle about the specified axis.
+    """
+    # Assuming tri_area is provided or calculated elsewhere
+    tri_area = calculate_triangle_area(p1, p2, p3)
+
+    # List of points
+    points = [p1, p2, p3]
+
+    # Sort points based on the specified axis
+    sorted_points = sorted(points, key=lambda p: p.Y())
+
+    # for i, point in enumerate(sorted_points):
+    #     print(f"Point {i+1}: ({point.X()}, {point.Y()}, {point.Z()})")
+
+    # Referencing the coordinates to the point closest to the axis
+    By = (sorted_points[1].Y() - sorted_points[0].Y())
+    Bz = (sorted_points[1].Z() - sorted_points[0].Z())
+    Cy = (sorted_points[2].Y() - sorted_points[0].Y())
+    Cz = (sorted_points[2].Z() - sorted_points[0].Z())
+
+    # Triangle has to be split into two via a parallel line to axis going through the middle point
+    Dz = Cz * (By / Cy) if Cy != 0 else 0  # Coordinate of the point on the parallel line
+    b = abs(Dz - Bz)  # Calculating length of the base of both triangles
+
+    # Moment of inertia calculations (adjusted for the correct formulas)
+    Y0 = (b / 12) * (By ** 3 + (Cy - By) ** 3)  # Moment of inertia of triangle to the split line
+    t = (By + Cy) / 3  # Distance of the center of mass to point closest to axis
+    Yt = Y0 - tri_area * ((By - t) ** 2)  # Moment of inertia to the center of mass
+    Ys = Yt + tri_area * ((t + sorted_points[0].Y()) ** 2)  # Moment of inertia to the center point
+
+    return Ys
+
+# Open the *.txt-file with coordinated where to colaculate
+sensor_info = pd.read_csv('Sensor_Positions3.txt', delimiter=',', header=None)
+sensor_info.columns = ['ID', 'Y', 'X', 'Z']
+sensor_info = sensor_info.astype({"ID": int, "X": float, "Y": float, "Z": float})
+
+# Load the STEP model
+step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
+step_model = load_step_model(step_model_path)
 
 # Definition the plane
 x_plane = 10
@@ -92,9 +214,7 @@ point_on_plane = gp_Pnt(x_plane, 0, 0)  # Point on the plane als othe center of 
 normal_to_plane = gp_Dir(1, 0, 0)  # Normal vector to the plane
 plane = gp_Pln(point_on_plane, normal_to_plane)
 
-# Load the STEP model
-step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
-step_model = load_step_model(step_model_path)
+
 
 # Slicing of the model - extracting the wire model
 sliced_model = slice_model_with_plane(step_model, plane)# Slice the model with the plane
@@ -114,69 +234,45 @@ for i in range(0, desired_num_points):
 area = 0
 cent_mass_Y_prepare = 0
 cent_mass_Z_prepare = 0
+moment_of_inertia_Y = 0
 moment_of_inertia_Z = 0
-moment_of_inertia_Z = 0
+
 for i in range (0, len(intersection_points_in) - 1): # Calculating areas of triangles using vertexes - formula half of sum of things #google it
     # using two triangles at a time 
+    # using two types of indexes, 1 and 2 for first a nd second triangle in the loop and Y and Z for the axis which I am calculating the moment of inertia to
 
     # first triangle Area
-    tri_area_1 = (1/2)*abs(((intersection_points_in[i].Y()*(intersection_points_in[i+1].Z() - (intersection_points_out[i].Z()))) + (intersection_points_in[i+1].Y()*((intersection_points_out[i].Z()) - intersection_points_in[i].Z())) + (intersection_points_out[i].Y()*(intersection_points_in[i].Z() - intersection_points_in[i+1].Z()))))
+    tri_area_1 = calculate_triangle_area(intersection_points_in[i], intersection_points_in[i+1], intersection_points_out[i])
     area += tri_area_1
 
     # second triangle Area
-    tri_area_2 = (1/2)*abs(((intersection_points_in[i+1].Y()*(intersection_points_out[i+1].Z() - (intersection_points_out[i].Z()))) + (intersection_points_out[i+1].Y()*((intersection_points_out[i].Z()) - intersection_points_in[i+1].Z())) + (intersection_points_out[i].Y()*(intersection_points_in[i+1].Z() - intersection_points_out[i+1].Z()))))
+    tri_area_2 = calculate_triangle_area(intersection_points_in[i+1], intersection_points_out[i], intersection_points_out[i+1])
     area += tri_area_2
 
     # calculation of center of mass
     #starting by finding the centroid of the triangles
     tri_centr_Y_1 = (intersection_points_in[i].Y() + intersection_points_in[i+1].Y() + intersection_points_out[i].Y())/3
-    tri_centr_X_2 = (intersection_points_in[i+1].Y() + intersection_points_out[i+1].Y() + intersection_points_out[i].Y())/3
+    tri_centr_Z_2 = (intersection_points_in[i+1].Y() + intersection_points_out[i+1].Y() + intersection_points_out[i].Y())/3
     tri_centr_Y_1 = (intersection_points_in[i].Z() + intersection_points_in[i+1].Z() + intersection_points_out[i].Z())/3
     tri_centr_Z_2 = (intersection_points_in[i+1].Z() + intersection_points_out[i+1].Z() + intersection_points_out[i].Z())/3
     # precalculating the coordinates (needs to be divided by total area in the end)
-    cent_mass_Y_prepare += tri_area_1 * tri_centr_Y_1 + tri_area_2 * tri_centr_X_2
+    cent_mass_Y_prepare += tri_area_1 * tri_centr_Y_1 + tri_area_2 * tri_centr_Z_2
     cent_mass_Z_prepare += tri_area_1 * tri_centr_Y_1 + tri_area_2 * tri_centr_Z_2
 
-    # first triangle moments of inertia to the Y axis
-    points_1 = [intersection_points_in[i], intersection_points_in[i+1], intersection_points_out[i]]
-    sorted_points_1 = sorted(points_1, key=lambda p: p.Z()) # sorting the points based on Z coordinate (distance to axis)
+    # Using the funtion to calculate the moment of inertia for the first triangle
+    moment_of_inertia_Y += calculate_moment_of_inertia_Y(intersection_points_in[i], intersection_points_in[i+1], intersection_points_out[i])
 
-    
-    # referencing the coordinated to point closest to axis
-    By_1 = (sorted_points_1[1].Y() - sorted_points_1[0].Y())
-    Bz_1 = (sorted_points_1[1].Z() - sorted_points_1[0].Z())
-    Cy_1 = (sorted_points_1[2].Y() - sorted_points_1[0].Y())
-    Cz_1 = (sorted_points_1[2].Z() - sorted_points_1[0].Z())
+    # Using the funtion to calculate the moment of inertia for the second triangle
+    moment_of_inertia_Y += calculate_moment_of_inertia_Y(intersection_points_in[i+1], intersection_points_out[i], intersection_points_out[i+1])
 
-    # trinagle has to be split into two via a parallel line to axis going through the middle point
-    Dy_1 = Cy_1 * (Bz_1/Cz_1) # coordinate of the point on the parallel line
-    b_2 = abs(Dy_1 - By_1) # calculating lenght of the base of both triangles
-    Y0_1 = (b_2 / 12) * (Bz_1 ** 3 + (Cz_1 - Bz_1) ** 3) # calculating the moment of inertia of triangle to the split line
-    t_2 = (Bz_1 + Cz_1) / 3 # calculating the distance of center of mass to poit closest to axis
-    Yt_1 = Y0_1 - tri_area_1 * ((Bz_1 - t_2) ** 2) # moment of inertia to thhe center of mass
-    Ys_1 = Yt_1 + tri_area_1 * ((t_2 + sorted_points_1[0].Z()) ** 2) #moment of inertia to the centerpoint
-    moment_of_inertia_Z += Ys_1
+    # Using the funtion to calculate the moment of inertia for the first triangle
+    moment_of_inertia_Z += calculate_moment_of_inertia_Z(intersection_points_in[i], intersection_points_in[i+1], intersection_points_out[i])
 
-    # second triangle moments of inertia to the Y axis (converted to be X axis)
-    # sorting the points based on Z coordinate (distance to axis)
-    points_2 = [intersection_points_in[i+1], intersection_points_out[i], intersection_points_out[i+1]]
-    sorted_points_2 = sorted(points_2, key=lambda p: p.Z())
-    
-    # referencing the coordinated to point closest to axis
-    By_2 = (sorted_points_2[1].Y() - sorted_points_2[0].Y())
-    Bz_2 = (sorted_points_2[1].Z() - sorted_points_2[0].Z())
-    Cy_2 = (sorted_points_2[2].Y() - sorted_points_2[0].Y())
-    Cz_2 = (sorted_points_2[2].Z() - sorted_points_2[0].Z())
+    # Using the funtion to calculate the moment of inertia for the second triangle
+    moment_of_inertia_Z += calculate_moment_of_inertia_Z(intersection_points_in[i+1], intersection_points_out[i], intersection_points_out[i+1])
 
-    # trinagle has to be split into two via a parallel line to axis going through the middle point
-    Dy_2 = Cy_2 * (Bz_2/Cz_2) # coordinate of the point on the parallel line
-    b_2 = abs(Dy_2 - By_2) # calculating lenght of the base of both triangles
-    Y0_2 = (b_2 / 12) * (Bz_2 ** 3 + (Cz_2 - Bz_2) ** 3) # calculating the moment of inertia of triangle to the split line
-    t_2 = (Bz_2 + Cz_2) / 3 # calculating the distance of center of mass to poit closest to axis
-    Yt_2 = Y0_2 - tri_area_2 * ((Bz_2 - t_2) ** 2) # moment of inertia to thhe center of mass
-    Ys_2 = Yt_2 + tri_area_2 * ((t_2 + sorted_points_2[0].Z()) ** 2) #moment of inertia to the centerpoint
-    moment_of_inertia_Z += Ys_2
-    
+
+
 # finalizing the calculation of center of mass
 cent_mass_Y = cent_mass_Y_prepare / area
 cent_mass_Z = cent_mass_Z_prepare / area
@@ -190,7 +286,7 @@ print(f"X: {cent_mass_Y}, Y: {cent_mass_Z}")
 print('moment_of_inertia_Z:')
 print(moment_of_inertia_Z)
 print('moment_of_inertia_Y:')
-# print(moment_of_inertia_Y)
+print(moment_of_inertia_Y)
 
 # Vizualization
 # display.DisplayShape(line_origin)
