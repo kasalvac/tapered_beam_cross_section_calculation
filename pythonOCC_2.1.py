@@ -272,12 +272,12 @@ def calculate_triangle_moment_of_inertia_Z(p1, p2, p3):
     return Ys
 
 # Open the *.txt-file with coordinated where to colaculate
-sensor_info = pd.read_csv('Sensor_Positions3.txt', delimiter=',', header=None)
-sensor_info.columns = ['ID', 'Y', 'X', 'Z']
+sensor_info = pd.read_csv('Sensor_Positions_Vaclav_fixed.txt', delimiter=',', header=None)
+sensor_info.columns = ['ID', 'X', 'Y', 'Z']
 sensor_info = sensor_info.astype({"ID": int, "X": float, "Y": float, "Z": float})
 
 # Load the STEP model
-step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
+step_model_path = "Tapered-Beam-Volume.stp"
 step_model = load_step_model(step_model_path)
 
 sensor_info['distance'] = 0.0
