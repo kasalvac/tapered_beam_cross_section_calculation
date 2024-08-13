@@ -3,6 +3,7 @@
 # chceck skipped
 # adding center of mass calculation
 # making it calculate along the wing box
+# adding calculation of polar moment
 
 import math
 from OCC.Display.SimpleGui import init_display
@@ -291,7 +292,11 @@ for index, value in sensor_info['X'].items():
     cent_mass_Y = cent_mass_Y_prepare / area
     cent_mass_Z = cent_mass_Z_prepare / area
 
-    distance_neutral_fiber = math.sqrt((cent_mass_Y - sensor_info.at[index, 'Y'])**2 + (cent_mass_Z - sensor_info.at[index, 'Z'])**2)
+    # distance_neutral_fiber = math.sqrt((cent_mass_Y - sensor_info.at[index, 'Y'])**2 + (cent_mass_Z - sensor_info.at[index, 'Z'])**2) # wrong
+    distance_neutral_fiber = abs(cent_mass_Z - sensor_info.at[index, 'Z']) # correct way to calculate
+
+    #aclculating polar moment simple way 
+    polar_moment = moment_of_inertia_Y + moment_of_inertia_Z
 
     # Add the calculated value to the corecponding column
     # sensor_info.at[index, 'Area'] = area
@@ -301,6 +306,7 @@ for index, value in sensor_info['X'].items():
     sensor_info.at[index, 'distance'] = distance_neutral_fiber
     sensor_info.at[index, 'inertiaZ'] = moment_of_inertia_Z
     sensor_info.at[index, 'inertiaY'] = moment_of_inertia_Y
+    sensor_info.at[index, 'polar'] = polar_moment
     
 
 print('sensor info:')
