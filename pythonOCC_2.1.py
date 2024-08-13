@@ -298,11 +298,6 @@ for index, value in sensor_info['X'].items():
     #aclculating polar moment simple way 
     polar_moment = moment_of_inertia_Y + moment_of_inertia_Z
 
-    # Add the calculated value to the corecponding column
-    # sensor_info.at[index, 'Area'] = area
-    # sensor_info.at[index, 'centery'] = cent_mass_Y
-    # sensor_info.at[index, 'centerz'] = cent_mass_Z
-
     sensor_info.at[index, 'distance'] = distance_neutral_fiber
     sensor_info.at[index, 'inertiaZ'] = moment_of_inertia_Z
     sensor_info.at[index, 'inertiaY'] = moment_of_inertia_Y
@@ -311,17 +306,6 @@ for index, value in sensor_info['X'].items():
 
 print('sensor info:')
 print(sensor_info)
-
-# print('area:')
-# print(area)
-
-# print('center of mass:')
-# print(f"X: {cent_mass_Y}, Y: {cent_mass_Z}")
-
-# print('moment_of_inertia_Z:')
-# print(moment_of_inertia_Z)
-# print('moment_of_inertia_Y:')
-# print(moment_of_inertia_Y)
 
 # Vizualization
 # display.DisplayShape(line_origin)
