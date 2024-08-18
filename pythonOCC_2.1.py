@@ -216,11 +216,7 @@ sensor_info = sensor_info.astype({"ID": int, "X": float, "Y": float, "Z": float}
 step_model_path = "Rechteckrohr_verjuengt_Volumen.stp"
 step_model = load_step_model(step_model_path)
 
-# x_plane = 10
-
-# sensor_info['Area'] = 0.0
-# sensor_info['centery'] = 0.0
-# sensor_info['centerz'] = 0.0
+# x_plane = 100
 
 sensor_info['distance'] = 0.0
 sensor_info['inertiaZ'] = 0.0
@@ -304,8 +300,11 @@ for index, value in sensor_info['X'].items():
     sensor_info.at[index, 'polar'] = polar_moment
     
 
-print('sensor info:')
-print(sensor_info)
+# print('sensor info:')
+# print(sensor_info)
+
+# making the output pretty
+results.to_csv('cross_cestion_variables_beam.txt', sep=',', index=False)
 
 # Vizualization
 # display.DisplayShape(line_origin)
