@@ -186,9 +186,6 @@ def calculate_moment_of_inertia_Z(p1, p2, p3):
     # Sort points based on the specified axis
     sorted_points = sorted(points, key=lambda p: p.Y())
 
-    # for i, point in enumerate(sorted_points):
-    #     print(f"Point {i+1}: ({point.X()}, {point.Y()}, {point.Z()})")
-
     # Referencing the coordinates to the point closest to the axis
     By = (sorted_points[1].Y() - sorted_points[0].Y())
     Bz = (sorted_points[1].Z() - sorted_points[0].Z())
