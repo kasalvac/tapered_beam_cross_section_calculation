@@ -1,5 +1,5 @@
 # tapered_beam_cross_section_calculation
-this script utilizes PythonOCC to load a stp model and slice it along its X axis. 
+this script utilizes PythonOCC to load a stp model and slice it along its X axis as amny times as defined in sensor_positions.txt
 Using custom triangulation method calculates:
     area of scross section
     center of mass
