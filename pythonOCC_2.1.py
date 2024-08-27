@@ -205,7 +205,7 @@ def calculate_moment_of_inertia_Z(p1, p2, p3):
     return Ys
 
 # Open the *.txt-file with coordinated where to colaculate
-sensor_info = pd.read_csv('Sensor_Positions3.txt', delimiter=',', header=None)
+sensor_info = pd.read_csv('Sensor_Positions.txt', delimiter=',', header=None)
 sensor_info.columns = ['ID', 'Y', 'X', 'Z']
 sensor_info = sensor_info.astype({"ID": int, "X": float, "Y": float, "Z": float})
 
