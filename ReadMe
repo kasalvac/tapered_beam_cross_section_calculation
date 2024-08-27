@@ -1,4 +1,4 @@
-# tapered_beam_cross_section_calculation
+tapered_beam_cross_section_calculation
 this script utilizes PythonOCC to load a stp model and slice it along its X axis as many time as there are sensors in sensor_positions.txt
 Using custom triangulation method calculates:
     area of scross section
@@ -6,9 +6,9 @@ Using custom triangulation method calculates:
     moments of inertia to axis Y & Z
     polar moment of inertia
 
-it retursn a csv file with all the data in format: 
+it retursn a csv file with all the data in format:
+    ['ID', 'X', 'Y', 'Z', 'DistanceNF', 'inertiaZ', 'inertiaY', 'polar_mom']
     
-
 just with with 1000 points the error is less than 1% and calculation takes around 500 ms for more information go to:
     Analysis of the algorithm's performance.png
 
